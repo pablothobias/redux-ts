@@ -1,37 +1,12 @@
-import { type ReactNode, createContext, useContext, useState, useReducer } from "react";
+import { createContext, useContext, useReducer } from "react";
 
-type Timer = {
-    id: number;
-    name: string;
-    duration: number;
-};
-
-type TimerContextType = {
-    isRunning: boolean;
-    timers: Timer[];
-};
-
-export type TimerContextValue = TimerContextType & {
-    addTimer: (timer: Timer) => void;
-    startTimer: () => void;
-    stopTimer: () => void;
-
-};
+import { type Timer, type TimerContextValue, type TimerContextType, type Action, type TimerContextProviderProps } from "./types";
 
 export const TimerContext = createContext<TimerContextValue | null>(null);
-
-type TimerContextProviderProps = {
-    children: ReactNode;
-};
 
 const initialState: TimerContextType = {
     isRunning: false,
     timers: [],
-};
-
-type Action = {
-    type: 'ADD_TIMER' | 'START_TIMER' | 'STOP_TIMER';
-    payload?: any;
 };
 
 const timerReducer = (state: TimerContextType, action: Action): TimerContextType => {
@@ -39,7 +14,7 @@ const timerReducer = (state: TimerContextType, action: Action): TimerContextType
         case "ADD_TIMER":
             return {
                 ...state,
-                timers: [...state.timers, action.payload],
+                timers: [...state.timers, { ...action.payload }],
             };
         case "START_TIMER":
             return {
@@ -60,7 +35,7 @@ const TimerContextProvider = ({ children }: TimerContextProviderProps) => {
     const [timerState, dispatch] = useReducer(timerReducer, initialState);
 
     const addTimer = (timer: Timer) => {
-        dispatch({ type: "ADD_TIMER", payload: timer });
+        dispatch({ type: "ADD_TIMER", payload: { ...timer } });
     };
 
     const startTimer = () => {
@@ -72,8 +47,8 @@ const TimerContextProvider = ({ children }: TimerContextProviderProps) => {
     };
 
     const value: TimerContextValue = {
-        isRunning: false,
-        timers: [],
+        isRunning: timerState.isRunning,
+        timers: timerState.timers,
         addTimer,
         startTimer,
         stopTimer,
